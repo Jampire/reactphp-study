@@ -2,7 +2,9 @@
 
 require 'vendor/autoload.php';
 
-$loop = \React\EventLoop\Factory::create();
+use React\EventLoop\Factory;
+
+$loop = Factory::create();
 
 $loop->addTimer(1, static function () {
    echo 'After timer', PHP_EOL;
