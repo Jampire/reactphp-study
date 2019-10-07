@@ -6,7 +6,7 @@ use React\EventLoop\Factory as LoopFactory;
 use React\Stream\ReadableResourceStream;
 
 $loop = LoopFactory::create();
-$stream = new ReadableResourceStream(fopen('composer.json', 'r'), $loop, 1);
+$stream = new ReadableResourceStream(fopen('composer.json', 'r'), $loop);
 $stream->on('data', static function($data) use ($stream, $loop) {
     echo $data, PHP_EOL;
     $stream->pause();
