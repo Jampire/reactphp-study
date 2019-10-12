@@ -20,12 +20,9 @@ class ConnectionPool
      */
     public function add(ConnectionInterface $connection): void
     {
-        $connection->write('Hi'. PHP_EOL);
-
+        $connection->write('Enter your name: ');
         $this->initEvents($connection);
-        $this->connections->attach($connection);
-
-        $this->sendAll('New user enters the chat' . PHP_EOL, $connection);
+        $this->setConnectionData($connection, []);
     }
 
     /**
@@ -34,13 +31,40 @@ class ConnectionPool
     public function initEvents(ConnectionInterface $connection): void
     {
         $connection->on('data', function($data) use ($connection) {
-            $this->sendAll($data, $connection);
+            $connectionData = $this->getConnectionData($connection);
+
+            if (empty($connectionData)) {
+                $this->addNewMember($data, $connection);
+                return;
+            }
+
+            $name = $connectionData['name'];
+            $this->sendAll("$name: $data", $connection);
         });
 
         $connection->on('close', function() use ($connection) {
-            $this->connections->detach($connection);
-            $this->sendAll('A user leaves the chat' . PHP_EOL, $connection);
+            $data = $this->getConnectionData($connection);
+            $name = $data['name'] ?? '';
+            $this->connections->offsetUnset($connection);
+            $this->sendAll("User $name leaves the chat" . PHP_EOL, $connection);
         });
+    }
+
+    private function setConnectionData(ConnectionInterface $connection, $data): void
+    {
+        $this->connections->offsetSet($connection, $data);
+    }
+
+    private function getConnectionData(ConnectionInterface $connection)
+    {
+        return $this->connections->offsetGet($connection);
+    }
+
+    private function addNewMember($name, ConnectionInterface $connection): void
+    {
+        $name = str_replace(["\n", "\r"], '', $name);
+        $this->setConnectionData($connection, ['name' => $name]);
+        $this->sendAll("User $name joins the chat" . PHP_EOL, $connection);
     }
 
     /**
