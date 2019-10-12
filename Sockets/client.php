@@ -17,12 +17,7 @@ $connector->connect('127.0.0.1:9697')
     ->then(
         static function(ConnectionInterface $connection) use ($stdin, $stdout) {
             echo 'Connection established', PHP_EOL;
-            $connection->on('data', static function($data) use ($stdout) {
-                $stdout->write($data);
-            });
-            $stdin->on('data', static function($data) use ($connection) {
-                $connection->write($data);
-            });
+            $stdin->pipe($connection)->pipe($stdout);
         },
         static function(Exception $e) use ($loop) {
             echo 'Cannot connect to server: ', $e->getMessage(), PHP_EOL;
