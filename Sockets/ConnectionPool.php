@@ -28,7 +28,7 @@ class ConnectionPool
     /**
      * @param ConnectionInterface $connection
      */
-    public function initEvents(ConnectionInterface $connection): void
+    private function initEvents(ConnectionInterface $connection): void
     {
         $connection->on('data', function($data) use ($connection) {
             $connectionData = $this->getConnectionData($connection);
